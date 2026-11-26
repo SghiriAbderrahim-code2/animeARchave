@@ -12,7 +12,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
 
   return (
-    <html className="dark h-screen">
+    <html lang="en" className="dark h-screen">
       <body className=" bg-[var(--bg)] ">
         <NaveBar />
         {children}

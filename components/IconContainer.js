@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
-export default function Icon(props) {
-  const { icon, Action } = props;
+export default function Icon({ icon, Action }) {
   return (
     <div
       onClick={() => {

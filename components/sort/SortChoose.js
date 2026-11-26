@@ -3,8 +3,7 @@
 import React from 'react';
 import { useSearch } from '@/stores/store';
 
-export default function SortChoose(props) {
-  const { chooseName, value } = props;
+export default function SortChoose({ chooseName, value }) {
   const setSortValue = useSearch((state) => state.setSort);
   const sort = useSearch((state) => state.sort);
   return (

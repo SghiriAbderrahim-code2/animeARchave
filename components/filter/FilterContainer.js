@@ -30,7 +30,8 @@ export default function FilterContainer() {
   const ratings = Ratings;
   const setProducer = useSearch((state) => state.setProducer);
   const selectedProducers = useSearch((state) => state.producers);
-  const producers = Producers.sort((a, b) => {
+  // نسخة قبل الفرز حتى لا يتم تطعير مصفوفة JSON المستوردة
+  const producers = [...Producers].sort((a, b) => {
     const nameA = a.name.toUpperCase();
     const nameB = b.name.toUpperCase();
     if (nameA < nameB) {

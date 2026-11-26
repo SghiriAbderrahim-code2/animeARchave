@@ -1,64 +1,91 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import List from '../components/List';
 import Load from '../components/loading';
 import { useSearch } from '@/stores/store';
 
 export default function Home() {
-
-  
-
-
-  //
-  const page = useSearch((state) => state.page);
-  const setPage = useSearch((state) => state.setPage);
-  const animeData = useSearch((state) => state.animeData);
   const setAnimeData = useSearch((state) => state.setAnimeData);
+  const reset = useSearch((state) => state.reset);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hasNext, setHasNext] = useState(true);
-  //
-  const fetchData = async () => {
+
+  const abortRef = useRef(null);
+  // نخزن القيم في ref حتى لا يصبح مستمع التمرير قديم الإغلاق (stale closure)
+  const isLoadingRef = useRef(true);
+  const hasNextRef = useRef(true);
+
+  const fetchData = useCallback(async () => {
+    // إلغاء أي طلب سابق حتى لا تتراكم الطلبات المتزامنة عند التمرير السريع
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    isLoadingRef.current = true;
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`https://api.jikan.moe/v4/top/anime?page=${page}`);
+      const response = await fetch(
+        `https://api.jikan.moe/v4/top/anime?page=${useSearch.getState().page}`,
+        { signal: controller.signal }
+      );
       const data = await response.json();
+      if (!Array.isArray(data.data)) throw new Error('Invalid API response');
+      if (abortRef.current !== controller) return;
 
-      setAnimeData([...animeData, ...data.data]);
-      setHasNext(data.pagination.has_next_page);
-      setPage();
-    } catch (error) {
-      setError(error);
+      setAnimeData((prev) => [...prev, ...data.data]);
+      const next = data.pagination?.has_next_page ?? false;
+      setHasNext(next);
+      hasNextRef.current = next;
+      useSearch.getState().setPage();
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      if (abortRef.current !== controller) return;
+      setError(err);
     } finally {
-      setIsLoading(false);
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+        isLoadingRef.current = false;
+        setIsLoading(false);
+      }
     }
-  };
-  useEffect(() => {
-    fetchData();
-    
-  }, []);
-  const handleScroll = () => {
-    if (
-      window.innerHeight + window.pageYOffset >= document.body.offsetHeight &&
-      !isLoading &&
-      hasNext
-    ) {
-      fetchData();
-    }
-  };
+  }, [setAnimeData]);
 
   useEffect(() => {
+    // إعادة الضبط عند الدخول لمنع نتائج البحث السابقة من الظهور كأنها نتائج الصفحة الرئيسية
+    reset();
+    fetchData();
+    return () => abortRef.current?.abort();
+  }, [reset, fetchData]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.pageYOffset >=
+          document.body.offsetHeight - 50 &&
+        !isLoadingRef.current &&
+        hasNextRef.current
+      ) {
+        fetchData();
+      }
+    };
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoading]);
+  }, [fetchData]);
+
   return (
     <div className="relative overflow-auto mt-14">
       <List />
       {isLoading && <Load />}
-      {error && <p>Error: {error.message}</p>}
+      {error && (
+        <p role="alert" className="text-center p-4 text-red-400">
+          Error: {error.message}
+        </p>
+      )}
     </div>
   );
 }

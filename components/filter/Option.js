@@ -1,23 +1,19 @@
 'use client';
 
 
-import React, { useEffect } from 'react';
+import React from 'react';
 
 export default function Option(props) {
   const { Selected, groupName, name, Multi, Func, value,} = props;
 
-  if(Multi){
-var check = false;
-for (const key in Selected) {
-  
-  if(Selected[key] == value){
-    check = true;
+  let check = false;
+  if (Multi) {
+    for (const key in Selected) {
+      if (Selected[key] == value) {
+        check = true;
+      }
+    }
   }
-}
-}
-useEffect(() => {
-  
-}, []);
   return (
     <label key={name}>
       <input

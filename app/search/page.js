@@ -1,87 +1,135 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Load from '../../components/loading';
 import List from '../../components/List';
 import { useSearch } from '@/stores/store';
-import SearchInput from '../../components/SearchInput'
+import SearchInput from '../../components/SearchInput';
+
+const buildQuery = () => {
+  // نقرأ الحالة من المتجر مباشرة حتى تبقى الدالة مستقرة (stable)
+  // ولا تحتاج إلى إعادة إنشاء عند كل تغيير في الفلاتر
+  const s = useSearch.getState();
+  const parts = [];
+  if (s.genres.length) parts.push(`genres=${s.genres}`);
+  if (s.producers.length) parts.push(`producers=${s.producers}`);
+  if (s.type) parts.push(`type=${s.type}`);
+  if (s.statu) parts.push(`status=${s.statu}`);
+  if (s.rating) parts.push(`rating=${s.rating}`);
+  parts.push(`q=${encodeURIComponent(s.search)}`);
+  parts.push(`order_by=${s.sort}`);
+  parts.push(`sort=${s.sortDirection ? 'desc' : 'asc'}`);
+  parts.push(`page=${s.page}`);
+  return parts.join('&');
+};
+
 export default function Search() {
   const reLoad = useSearch((state) => state.reLoad);
   const searchValue = useSearch((state) => state.search);
-  const setSearchValue = useSearch((state) => state.setSearch);
-  const page = useSearch((state) => state.page);
-  const setPage = useSearch((state) => state.setPage);
-  const type = useSearch((state) => state.type);
-  const typeValue = type === '' ? '' : `type=${type}&`;
-  const statu = useSearch((state) => state.statu);
-  const statuValue = statu === '' ? '' : `status=${statu}&`;
-  const rating = useSearch((state) => state.rating);
-  const ratingValue = rating === '' ? '' : `rating=${rating}&`;
-  const producers = useSearch((state) => state.producers);
-  const producersValue = producers.length === [].length ? '' : `producers=${producers}&`;
-  const genres = useSearch((state) => state.genres);
-  const genresValue = genres.length === [].length ? '' : `genres=${genres}&`;
-  const animeData = useSearch((state) => state.animeData);
-  const setAnimeData = useSearch((state) => state.setAnimeData);
   const sortValue = useSearch((state) => state.sort);
   const sortDirection = useSearch((state) => state.sortDirection);
+  const setAnimeData = useSearch((state) => state.setAnimeData);
+  const setSearchValue = useSearch((state) => state.setSearch);
   const reset = useSearch((state) => state.reset);
+
   const [isLoading, setIsLoading] = useState(false);
-  const [hasNext, setHasNext] = useState(true);
   const [error, setError] = useState(null);
-  //
-  useEffect(() => {
-    reset();
-  }, []);
-  const fetchData = async () => {
+
+  const abortRef = useRef(null);
+  const debounceRef = useRef(null);
+  const isLoadingRef = useRef(false);
+  const hasNextRef = useRef(true);
+
+  const fetchData = useCallback(async () => {
+    if (isLoadingRef.current) return;
+
+    // إلغاء أي جلب سابق قبل بدء جلب جديد (يمنع تداخل الصفحات)
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    isLoadingRef.current = true;
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch(
-        `https://api.jikan.moe/v4/anime?${genresValue}${producersValue}${typeValue}${statuValue}${ratingValue}&q=${searchValue}&order_by=${sortValue}&sort=${sortDirection ? 'desc' : 'asc'
-        }&page=${page}`
+        `https://api.jikan.moe/v4/anime?${buildQuery()}`,
+        { signal: controller.signal }
       );
       const data = await response.json();
+      if (!Array.isArray(data.data)) throw new Error('Invalid API response');
 
-      setAnimeData([...animeData, ...data.data]);
-      setHasNext(data.pagination.has_next_page);
-      setPage();
-    } catch (error) {
-      setError(error);
+      // تجاهل النتائج إذا كان هذا الطلب قد أُلغي لصالح أحدث طلب
+      if (abortRef.current !== controller) return;
+
+      setAnimeData((prev) => [...prev, ...data.data]);
+      hasNextRef.current = data.pagination?.has_next_page ?? false;
+      useSearch.getState().setPage();
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      if (abortRef.current !== controller) return;
+      setError(err);
     } finally {
-      setIsLoading(false);
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+        isLoadingRef.current = false;
+        setIsLoading(false);
+      }
     }
-  };
-  const searching = async () => {
-    setSearchValue(document.getElementById('inSearch').value);
-  };
+  }, [setAnimeData]);
+
+  const searching = useCallback(
+    (value) => {
+      // debounce 400ms: انتظار توقف الكتابة قبل إرسال الطلب
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        setSearchValue(value);
+      }, 400);
+    },
+    [setSearchValue]
+  );
+
+  // إعادة الجلب عند تغيير نص البحث أو الفلاتر (reLoad) أو الفرز
   useEffect(() => {
     fetchData();
-  }, [searchValue, reLoad]);
+  }, [searchValue, reLoad, sortValue, sortDirection, fetchData]);
 
-  const handleScroll = () => {
-    if (
-      window.innerHeight + window.pageYOffset >=
-      document.body.offsetHeight - 50 &&
-      !isLoading &&
-      hasNext
-    ) {
-      fetchData();
-    }
-  };
+  useEffect(() => () => clearTimeout(debounceRef.current), []);
 
   useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.pageYOffset >=
+          document.body.offsetHeight - 50 &&
+        !isLoadingRef.current &&
+        hasNextRef.current
+      ) {
+        fetchData();
+      }
+    };
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoading]);
+  }, [fetchData]);
+
+  useEffect(() => {
+    reset();
+    return () => abortRef.current?.abort();
+    // reset مستقر من zustand ولا يحتاج إلى إعادة تشغيل
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="overflow-auto pt-14 flex flex-col">
       <SearchInput search={searching} />
       <List />
       {isLoading && <Load />}
-      {error && <p>Error: {error.message}</p>}
+      {error && (
+        <p role="alert" className="text-center p-4 text-red-400">
+          Error: {error.message}
+        </p>
+      )}
     </div>
   );
 }

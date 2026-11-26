@@ -33,21 +33,21 @@ export default function AnimeContainer(promps) {
       <Image
         placeholder={`data:image/svg+xml;base64,${toBase64(shimmer(700, 475))}`}
         src={
-           anime.entry.images.jpg.large_image_url
-            
+           anime.entry?.images?.jpg?.large_image_url ?? ''
+             
         }
         width={225}
         height={385}
-        alt={ anime.entry.title }
+        alt={ anime.entry?.title ?? 'episode' }
         className=" object-fill w-full h-full"
       />
 
       <div className="z-10 w-8 absolute bottom-0 h-1/4 w-full bg-gradient-to-t from-black to-[rgba(0,0,0,0.3)]">
         <p className=" [text-shadow:_0_0_10px_black] text-sm font-medium  w-full h-1/2 truncate text-center px-1">
-          { anime.entry.title }
+          { anime.entry?.title ?? '' }
         </p>
 <p className="  w-full h-1/2 flex text-[var(--theme-color)] text-xs font-bold justify-between p-1">
-            {anime.episodes[0].title}
+            {anime.episodes?.[0]?.title ?? ''}
           </p>
       </div>
     </div>

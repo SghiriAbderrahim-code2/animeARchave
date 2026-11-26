@@ -2,12 +2,9 @@
 
 import React from 'react';
 import AnimeContainer from './AnimeContainer';
-import EpisodeContainer from './EpisodeContainer';
 import { useSearch } from '@/stores/store';
-import { usePathname } from 'next/navigation';
 
 export default function List() {
-  const path = usePathname();
   const animeData = useSearch((state) => state.animeData);
   const list = (list) => {
     if (!Array.isArray(list)) return null;

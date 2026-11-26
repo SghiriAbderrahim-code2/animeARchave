@@ -17,7 +17,12 @@ export const useSearch = create((set) => ({
       sortDirection: !state.sortDirection,
     })),
   animeData: [],
-  setAnimeData: (newData) => set({ animeData: newData }),
+  // يقبل قيمة مباشرة أو دالة تحديث وظيفية: setAnimeData(prev => [...prev, ...newItems])
+  setAnimeData: (newData) =>
+    set((state) => ({
+      animeData:
+        typeof newData === 'function' ? newData(state.animeData) : newData,
+    })),
   type: '',
   setType: (newValue) => set({ type: newValue }),
   statu: '',

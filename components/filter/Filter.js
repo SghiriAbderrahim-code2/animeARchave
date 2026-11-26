@@ -10,7 +10,7 @@ export default function Filter({
   options,
   multi,
   func,
-} = props) {
+}) {
   return (
     <div className=" rounded-lg relative border-2 border-[var(--gr2)] py-2 px-4 w-full flex flex-col justify-center ">
       <input
