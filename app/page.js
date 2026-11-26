@@ -29,7 +29,7 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        `https://api.jikan.moe/v4/top/anime?page=${useSearch.getState().page}`,
+        `https://api.tenrai.org/v1/top/anime?page=${useSearch.getState().page}`,
         { signal: controller.signal }
       );
       const data = await response.json();

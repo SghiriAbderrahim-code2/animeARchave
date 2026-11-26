@@ -10,7 +10,7 @@ export default function AnimeEpisodes(promps) {
   const fetchData = useCallback(async () => {
     try {
       const response = await fetch(
-        `https://api.jikan.moe/v4/anime/${id}/episodes?page=${page}`
+        `https://api.tenrai.org/v1/anime/${id}/episodes?page=${page}`
       );
       const result = await response.json();
       if (!Array.isArray(result?.data)) throw new Error('Invalid response');

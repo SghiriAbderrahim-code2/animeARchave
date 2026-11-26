@@ -16,7 +16,7 @@ export default function AnimeCharacters(promps) {
     (async () => {
       try {
         const response = await fetch(
-          `https://api.jikan.moe/v4/anime/${id}/characters`
+          `https://api.tenrai.org/v1/anime/${id}/characters`
         );
         const result = await response.json();
         if (cancelled) return;

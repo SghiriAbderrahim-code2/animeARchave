@@ -17,7 +17,7 @@ export default function AnimeDetails(promps) {
 
     (async () => {
       try {
-        const response = await fetch(`https://api.jikan.moe/v4/anime/${id}/full`);
+        const response = await fetch(`https://api.tenrai.org/v1/anime/${id}/full`);
         const result = await response.json();
         if (cancelled) return;
         if (!result?.data) throw new Error('Anime not found');

@@ -54,7 +54,7 @@ export default function Search() {
 
     try {
       const response = await fetch(
-        `https://api.jikan.moe/v4/anime?${buildQuery()}`,
+        `https://api.tenrai.org/v1/anime?${buildQuery()}`,
         { signal: controller.signal }
       );
       const data = await response.json();

@@ -11,7 +11,7 @@ export default function RelationDiv(promps) {
   const fetchData = useCallback(async () => {
     try {
       const response = await fetch(
-        `https://api.jikan.moe/v4/anime/${data.mal_id}`
+        `https://api.tenrai.org/v1/anime/${data.mal_id}`
       );
       const result = await response.json();
       if (!result?.data) throw new Error('Not found');
