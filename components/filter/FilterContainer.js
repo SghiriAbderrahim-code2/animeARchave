@@ -10,7 +10,6 @@ import {
   Ratings,
   Producers,
   Genres,
-  Xgenres,
   Themes,
   Demographics,
 } from '../jsons';
@@ -45,7 +44,6 @@ export default function FilterContainer() {
   const setGenre = useSearch((state) => state.setGenre);
   const selectedGenres = useSearch((state) => state.genres);
   const genres = Genres;
-  const xGenres = Xgenres;
   const themes = Themes;
   const demographics = Demographics;
   const filters = [
@@ -98,24 +96,6 @@ export default function FilterContainer() {
       selected: selectedGenres,
       name: 'Genre',
       options: genres,
-      multi: true,
-      func: (value) => {
-        let val = [];
-        for (const key in selectedGenres) {
-          val.push(selectedGenres[key]);
-        }
-        if (val.includes(value)) {
-          val.splice(val.indexOf(value), 1);
-        } else {
-          val.push(value);
-        }
-        setGenre(val);
-      },
-    },
-    {
-      selected: selectedGenres,
-      name: 'Xgenre',
-      options: xGenres,
       multi: true,
       func: (value) => {
         let val = [];

@@ -1,28 +1,66 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { usePathname } from 'next/navigation';
 import AnimeDetails from '../../../components/anime/AnimeDetails';
 import AnimeCharacters from '../../../components/anime/AnimeCharacters';
 import AnimePictures from '../../../components/anime/AnimePictures';
-
-const conteners = [
-  { name: 'Details', div: <AnimeDetails /> },
-  { name: 'Characters', div: <AnimeCharacters /> },
-  { name: 'Pictures', div: <AnimePictures /> },
-];
+import Load from '../../../components/loading';
+import isAdult from '../../../components/isAdult';
 
 export default function Page() {
   const path = usePathname();
   const id = path.split('/')[2];
   const [active, setActive] = useState('Details');
+  // بوابة المحتوى: نتحقق من تصنيف الأنمي قبل عرض أي محتوى
+  // لمنع ظهور محتوى +18 عند الوصول المباشر بالرابط
+  const [gate, setGate] = useState('checking'); // 'checking' | 'ok' | 'blocked'
+
+  useEffect(() => {
+    let cancelled = false;
+    setGate('checking');
+
+    (async () => {
+      try {
+        const response = await fetch(`https://api.tenrai.org/v1/anime/${id}`);
+        const result = await response.json();
+        if (cancelled) return;
+        setGate(result?.data && isAdult(result.data) ? 'blocked' : 'ok');
+      } catch {
+        // فشل الفحص لا يمنع عرض المحتوى السليم
+        if (!cancelled) setGate('ok');
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   const sections = [
     { name: 'Details', div: <AnimeDetails id={id} /> },
     { name: 'Characters', div: <AnimeCharacters id={id} /> },
     { name: 'Pictures', div: <AnimePictures id={id} /> },
   ];
+
+  if (gate === 'checking') {
+    return (
+      <div className="w-screen h-screen grid place-items-center">
+        <Load />
+      </div>
+    );
+  }
+
+  if (gate === 'blocked') {
+    return (
+      <div className="w-screen h-screen grid place-items-center px-4">
+        <p role="alert" className="text-center p-4 text-red-400">
+          This anime is unavailable: 18+ content is not allowed.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-screen h-screen overflow-hidden ">

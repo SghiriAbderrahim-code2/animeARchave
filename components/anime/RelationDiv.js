@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AnimeContainer from '../AnimeContainer';
+import isAdult from '../isAdult';
 
 export default function RelationDiv(promps) {
   const { data } = promps;
@@ -15,6 +16,8 @@ export default function RelationDiv(promps) {
       );
       const result = await response.json();
       if (!result?.data) throw new Error('Not found');
+      // إخفاء أي علاقة تشير إلى محتوى +18
+      if (isAdult(result.data)) return;
       setAnimeData(result.data);
     } catch (err) {
       setError(err);

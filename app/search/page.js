@@ -11,6 +11,9 @@ const buildQuery = () => {
   // ولا تحتاج إلى إعادة إنشاء عند كل تغيير في الفلاتر
   const s = useSearch.getState();
   const parts = [];
+  // sfw + genres_exclude: منع أي محتوى +18 (Hentai/Erotica) من نتائج البحث
+  parts.push('sfw=true');
+  parts.push('genres_exclude=12,49');
   if (s.genres.length) parts.push(`genres=${s.genres}`);
   if (s.producers.length) parts.push(`producers=${s.producers}`);
   if (s.type) parts.push(`type=${s.type}`);
