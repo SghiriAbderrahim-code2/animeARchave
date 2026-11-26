@@ -78,7 +78,7 @@ export default function Search() {
 
   return (
     <div className="overflow-auto pt-14 flex flex-col">
-      <SearchInput search={searching()} />
+      <SearchInput search={searching} />
       <List />
       {isLoading && <Load />}
       {error && <p>Error: {error.message}</p>}

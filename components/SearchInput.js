@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function SearchInput(search) {
+export default function SearchInput({ search }) {
   return (
     <div className=" my-1 flex justify-center w-full gap-2">
         <input
