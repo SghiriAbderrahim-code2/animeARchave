@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Back, Filter, Search, Menu, Sort } from './svgs';
 import Icon from './IconContainer';
+import ThemeToggle from './ThemeToggle';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import SortContainer from './sort/SortContainer';
@@ -157,6 +158,7 @@ export default function NaveBar() {
         {path === '/search' ? null : (
           <Icon Action={() => {}} icon={<Menu />}></Icon>
         )}
+        <ThemeToggle />
       </div>
     </nav>
   );

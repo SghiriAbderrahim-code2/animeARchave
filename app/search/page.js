@@ -5,10 +5,11 @@ import Load from '../../components/loading';
 import List from '../../components/List';
 import { useSearch } from '@/stores/store';
 import SearchInput from '../../components/SearchInput';
+import FilterChips from '../../components/FilterChips';
 
 const buildQuery = () => {
   // نقرأ الحالة من المتجر مباشرة حتى تبقى الدالة مستقرة (stable)
-  // ولا تحتاج إلى إعادة إنشاء عند كل تغيير في الفلاتر
+  // ولا تحتاج إلى إعادة إنشائها عند كل تغيير في الفلاتر
   const s = useSearch.getState();
   const parts = [];
   // sfw + genres_exclude: منع أي محتوى +18 (Hentai/Erotica) من نتائج البحث
@@ -34,6 +35,9 @@ export default function Search() {
   const setAnimeData = useSearch((state) => state.setAnimeData);
   const setSearchValue = useSearch((state) => state.setSearch);
   const reset = useSearch((state) => state.reset);
+  const initSortDraft = useSearch((state) => state.initSortDraft);
+  const applySortDraft = useSearch((state) => state.applySortDraft);
+  const cancelSortDraft = useSearch((state) => state.cancelSortDraft);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -117,8 +121,8 @@ export default function Search() {
   }, [fetchData]);
 
   useEffect(() => {
-    reset();
-    return () => abortRef.current?.abort();
+    initSortDraft();
+    return () => cancelSortDraft();
     // reset مستقر من zustand ولا يحتاج إلى إعادة تشغيل
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -126,6 +130,7 @@ export default function Search() {
   return (
     <div className="overflow-auto pt-14 flex flex-col">
       <SearchInput search={searching} />
+      <FilterChips />
       <List />
       {isLoading && <Load />}
       {error && (

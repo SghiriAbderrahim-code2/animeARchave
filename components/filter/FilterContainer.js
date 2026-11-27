@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { useShow } from '@/stores/store';
+import { useId } from 'react';
 import Filter from './Filter';
 import { useSearch } from '@/stores/store';
+import { useShow } from '@/stores/store';
 import {
   Types,
   Status,
@@ -46,6 +47,7 @@ export default function FilterContainer() {
   const genres = Genres;
   const themes = Themes;
   const demographics = Demographics;
+  const filterId = useId();
   const filters = [
     {
       selected: selectedType,
@@ -148,14 +150,38 @@ export default function FilterContainer() {
     },
   ];
   return (
-    <div
-      className={`${
-        !show ? 'hidden' : null
-      } grid place-items-center fixed backdrop-opacity-10 backdrop-invert bg-black/90  top-0 left-0 w-screen h-screen  fill-[var(--tx)] `}
+    <div 
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={`filter-title-${filterId}`}
+      onClick={() => setFilterShow(false)}
+      className="fixed top-0 left-0 w-full h-full z-50"
     >
-      <div className=" grid grid-rows-6 bg-[var(--bg)] w-3/4 max-w-[550px] h-4/5 max-h-[30rem] rounded-md border-2 border-[var(--gr2)]">
-        <div className="flex justify-between items-center w-full py-2 px-6 fill-[var(--theme-color)] ">
-          <p className="font-bold text-xl ">Filter :</p>
+      <div
+        className={show
+          ? 'grid grid-rows-6 bg-[var(--bg)] w-3/4 max-w-[550px] h-4/5 max-h-[30rem] rounded-md border-2 border-[var(--gr2)] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6'
+          : 'fixed inset-0 z-[999]'
+        }
+      >
+        <div className="flex justify-between items-center w-full py-3 px-6 fill-[var(--theme-color)]">
+          <p id={`filter-title-${filterId}`} className="font-bold text-xl">Filter :</p>
+          <button
+            type="button"
+            onClick={() => setFilterShow(false)}
+            className="p-2 rounded hover:bg-[var(--bg)] hover:text-[var(--theme-color)]"
+            aria-label="Close filter"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         <div className="p-4 overflow-auto row-span-5 flex flex-col gap-4">

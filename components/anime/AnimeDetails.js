@@ -85,11 +85,13 @@ export default function AnimeDetails(promps) {
           </div>
         </div>
         <div className="w-11/12 bg-[var(--gr)]  rounded">
-          <div
+          <button
+            type="button"
+            aria-expanded={slide}
             onClick={() => {
               setSlide(!slide);
             }}
-            className={`mb-3 text-sm w-full p-4 pb-4 ${
+            className={`mb-3 text-sm w-full p-4 pb-4 text-left ${
               slide ? null : 'lg:h-20 h-16'
             } overflow-hidden cursor-pointer relative lg:text-lg`}
           >
@@ -97,7 +99,7 @@ export default function AnimeDetails(promps) {
             <div className="absolute bottom-0 left-0 w-full flex justify-center fill-[var(--tx)] bg-gradient-to-t from-[var(--gr)] pt-2">
               {slide ? <ArrowUp /> : <ArrowDown />}
             </div>
-          </div>
+          </button>
           <div
             className={`flex gap-2 ${
               slide ? 'flex-wrap' : 'overflow-auto'

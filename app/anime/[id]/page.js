@@ -13,9 +13,21 @@ export default function Page() {
   const path = usePathname();
   const id = path.split('/')[2];
   const [active, setActive] = useState('Details');
+  // تحميل كسول: نجلب بيانات التبويب فقط عند زيارته لأول مرة
+  const [visited, setVisited] = useState(() => new Set(['Details']));
   // بوابة المحتوى: نتحقق من تصنيف الأنمي قبل عرض أي محتوى
   // لمنع ظهور محتوى +18 عند الوصول المباشر بالرابط
   const [gate, setGate] = useState('checking'); // 'checking' | 'ok' | 'blocked'
+
+  const handleTab = (name) => {
+    setActive(name);
+    setVisited((prev) => {
+      if (prev.has(name)) return prev;
+      const next = new Set(prev);
+      next.add(name);
+      return next;
+    });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -74,7 +86,7 @@ export default function Page() {
               key={item.name}
               type="button"
               aria-current={active === item.name ? 'page' : undefined}
-              onClick={() => setActive(item.name)}
+              onClick={() => handleTab(item.name)}
               className={`rounded cursor-pointer animeSection text-[var(--tx)] no-underline text-sm pb-1 text-center w-full bg-transparent border-0 ${
                 active === item.name ? 'active' : ''
               }`}
@@ -87,6 +99,7 @@ export default function Page() {
 
       <main>
         {sections.map((item, i) => {
+          if (!visited.has(item.name)) return null;
           return (
             <section
               key={item.name}

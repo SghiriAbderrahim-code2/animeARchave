@@ -16,6 +16,13 @@ export const useSearch = create((set) => ({
     set((state) => ({
       sortDirection: !state.sortDirection,
     })),
+  sortDraft: 'title',
+  sortDirectionDraft: true,
+  setSortDraft: (v) => set({ sortDraft: v }),
+  setSortDirectionDraft: () => set((state) => ({ sortDirectionDraft: !state.sortDirectionDraft })),
+  initSortDraft: () => set((state) => ({ sortDraft: state.sort, sortDirectionDraft: state.sortDirection })),
+  applySortDraft: () => set((state) => ({ sort: state.sortDraft, sortDirection: state.sortDirectionDraft })),
+  cancelSortDraft: () => set((state) => ({ sortDraft: state.sort, sortDirectionDraft: state.sortDirection })),
   animeData: [],
   // يقبل قيمة مباشرة أو دالة تحديث وظيفية: setAnimeData(prev => [...prev, ...newItems])
   setAnimeData: (newData) =>

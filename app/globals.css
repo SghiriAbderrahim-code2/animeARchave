@@ -27,10 +27,17 @@
 .light:root {
   --tx: black;
   --bg: hsl(var(--nb-color), 100%, 98%);
-  --gr: hsl(var(--nb-color), 100%, 95%);
   --theme-color: hsl(var(--nb-color), 100%, 30%);
   --gr: hsla(0, 0%, 50%, 0.3);
+  --gr2: #3d3d3d;
+  --gr3: #7c7c7c;
   --shadow: hsla(0, 0%, 0%, 0.4);
+}
+
+/* Focus visible rings for accessibility */
+.focus-visible {
+  outline: 2px solid var(--theme-color);
+  outline-offset: 2px;
 }
 
 .active {

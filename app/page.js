@@ -1,24 +1,23 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import List from '../components/List';
 import Load from '../components/loading';
+import SkeletonCard from '../components/SkeletonCard';
 import { useSearch } from '@/stores/store';
 
 export default function Home() {
+  const animeData = useSearch((state) => state.animeData);
   const setAnimeData = useSearch((state) => state.setAnimeData);
-  const reset = useSearch((state) => state.reset);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [hasNext, setHasNext] = useState(true);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+  const [hasNext, setHasNext] = React.useState(true);
 
   const abortRef = useRef(null);
-  // نخزن القيم في ref حتى لا يصبح مستمع التمرير قديم الإغلاق (stale closure)
   const isLoadingRef = useRef(true);
   const hasNextRef = useRef(true);
 
   const fetchData = useCallback(async () => {
-    // إلغاء أي طلب سابق حتى لا تتراكم الطلبات المتزامنة عند التمرير السريع
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -55,11 +54,14 @@ export default function Home() {
   }, [setAnimeData]);
 
   useEffect(() => {
-    // إعادة الضبط عند الدخول لمنع نتائج البحث السابقة من الظهور كأنها نتائج الصفحة الرئيسية
-    reset();
-    fetchData();
+    // جلب البيانات فقط إذا كانت القائمة فارغة للحفاظ على مكان المستخدم عند الرجوع
+    if (animeData.length === 0) {
+      fetchData();
+    } else {
+      setIsLoading(false);
+    }
     return () => abortRef.current?.abort();
-  }, [reset, fetchData]);
+  }, [fetchData, animeData.length]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,7 +82,19 @@ export default function Home() {
   return (
     <div className="relative overflow-auto mt-14">
       <List />
-      {isLoading && <Load />}
+      {isLoading && animeData.length === 0 && (
+        <div className="grid lg:grid-cols-6 sm:grid-cols-4 grid-cols-2 gap-2 p-3">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      )}
+      {isLoading && animeData.length > 0 && <Load />}
+      {!hasNext && animeData.length > 0 && (
+        <p className="text-center p-6 text-[var(--gr3)] text-sm font-semibold">
+          🎉 You&apos;ve reached the end of the archive!
+        </p>
+      )}
       {error && (
         <p role="alert" className="text-center p-4 text-red-400">
           Error: {error.message}

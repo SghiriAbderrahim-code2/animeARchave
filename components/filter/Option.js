@@ -14,8 +14,10 @@ export default function Option(props) {
       }
     }
   }
+  const [isFocused, setIsFocused] = React.useState(false);
+
   return (
-    <label key={name}>
+    <label key={name} className="focus-visible:outline focus-visible:outline-2 focus-visible:[--theme-color]">
       <input
         onChange={() => {
           Func();
@@ -26,11 +28,10 @@ export default function Option(props) {
         checked={
           Multi?
           check 
-          :
-          value === Selected ? true : false
+          : value === Selected ? true : false
         }
       />
-      <div className=" px-3 py-1 text-sm rounded-full font-semibold peer-checked:bg-[var(--theme-color)] peer-checked:text-[var(--bg)] text-[var(--tx)] bg-[var(--gr)] ">
+      <div className=" px-3 py-1 text-sm rounded-full font-semibold peer-checked:bg-[var(--theme-color)] peer-checked:text-[var(--bg)] text-[var(--tx)] bg-[var(--gr)]">
         {name}
       </div>
     </label>
