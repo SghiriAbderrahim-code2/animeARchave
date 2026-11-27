@@ -149,6 +149,8 @@ export default function FilterContainer() {
       },
     },
   ];
+  if (!show) return null;
+
   return (
     <div 
       role="dialog"
@@ -158,11 +160,11 @@ export default function FilterContainer() {
       className="fixed top-0 left-0 w-full h-full z-50"
     >
       <div
-        className={show
-          ? 'grid grid-rows-6 bg-[var(--bg)] w-3/4 max-w-[550px] h-4/5 max-h-[30rem] rounded-md border-2 border-[var(--gr2)] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6'
-          : 'fixed inset-0 z-[999]'
-        }
+        className="grid place-items-center fixed inset-0 bg-black/70 backdrop-blur-sm"
       >
+        <div className=" grid grid-rows-6 bg-[var(--bg)] w-3/4 max-w-[550px] h-4/5 max-h-[30rem] rounded-md border-2 border-[var(--gr2)] shadow-2xl p-6"
+          onClick={(e) => e.stopPropagation()}
+        >
         <div className="flex justify-between items-center w-full py-3 px-6 fill-[var(--theme-color)]">
           <p id={`filter-title-${filterId}`} className="font-bold text-xl">Filter :</p>
           <button
@@ -209,6 +211,7 @@ export default function FilterContainer() {
           >
             Ok
           </button>
+        </div>
         </div>
       </div>
     </div>
